@@ -33,7 +33,6 @@ NODES=(
     "https://github.com/kijai/ComfyUI-WanVideoWrapper"
 )
 
-# ───────── MODELS ─────────
 WAN_JSON_MODELS=(
     "https://huggingface.co/diego97martinez/video_baile_stady_dancer/resolve/main/WAN2-1-SteadyDancer-FP8.json"
 )
@@ -72,10 +71,11 @@ download_files() {
 
     for url in "$@"; do
         echo "Downloading: $url"
-        if [[ -n $HF_TOKEN && $url =~ huggingface.co ]]; then
-            wget --header="Authorization: Bearer $HF_TOKEN" -qnc --content-disposition -P "$dir" "$url"
+        if [[ -n "$HF_TOKEN" && "$url" =~ huggingface.co ]]; then
+            wget --header="Authorization: Bearer $HF_TOKEN" \
+                 -nc --content-disposition -P "$dir" "$url"
         else
-            wget -qnc --content-disposition -P "$dir" "$url"
+            wget -nc --content-disposition -P "$dir" "$url"
         fi
     done
 }
@@ -90,19 +90,19 @@ for repo in "${NODES[@]}"; do
     path="custom_nodes/${dir}"
     requirements="${path}/requirements.txt"
 
-    if [[ -d $path ]]; then
-        echo "Updating node: ${dir}"
+    if [[ -d "$path" ]]; then
+        echo "Updating node: $dir"
         (cd "$path" && git pull)
     else
-        echo "Cloning node: ${dir}"
+        echo "Cloning node: $dir"
         git clone "$repo" "$path" --recursive
     fi
 
-    [[ -f $requirements ]] && pip install --no-cache-dir -r "$requirements"
+    [[ -f "$requirements" ]] && pip install --no-cache-dir -r "$requirements"
 done
 
 # ─────────────────────────────────────────────
-# 6. Download models (ВАЖНЫЕ ПУТИ)
+# 6. Download models (ПРАВИЛЬНЫЕ ПУТИ)
 # ─────────────────────────────────────────────
 download_files "models/diffusion_models" "${WAN_JSON_MODELS[@]}"
 download_files "models/diffusion_models" "${WAN_FP8_MODELS[@]}"
